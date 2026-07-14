@@ -296,9 +296,7 @@ curl -X POST localhost:8000/chapters \
 
 **`docker compose up` fails pulling `ghcr.io/open-webui/open-webui:main` with a DNS-style "no such host" error**
 
-DNS resolution problem on your machine, not a project bug. Try, in order: `nslookup ghcr.io` in a plain terminal (fails too → system DNS issue); restart Docker Desktop fully; check Docker Desktop → Settings → Resources →
-
-Network for a stuck DNS override; try a different network if you're behind a restrictive VPN (`ghcr.io` is sometimes blocked even when `docker.io`isn't).
+DNS resolution problem on your machine, not a project bug. Try, in order: `nslookup ghcr.io` in a plain terminal (fails too → system DNS issue); restart Docker Desktop fully; check Docker Desktop → Settings → Resources → Network for a stuck DNS override; try a different network if you're behind a restrictive VPN (`ghcr.io` is sometimes blocked even when `docker.io` isn't).
 
 **Agent can't reach Ollama (`connection refused` via `host.docker.internal`)**
 
