@@ -18,10 +18,10 @@ This guide shows you how to connect **Claude Desktop** to multiple NVIDIA-hosted
 - NVIDIA API keys for the models you want to use:
 - Sign up for free at https://build.nvidia.com/models?modal=signin
     - Generate APIs for:
-        - [Link](https://build.nvidia.com/black-forest-labs/flux_2-klein-4b)
-        - [Link](https://build.nvidia.com/deepseek-ai/deepseek-v4-pro)
-        - [Link](https://build.nvidia.com/google/gemma-4-31b-it)
-        - [Link](https://build.nvidia.com/z-ai/glm-5.2)
+        - [flux_2-klein-4b](https://build.nvidia.com/black-forest-labs/flux_2-klein-4b)
+        - [deepseek-v4-pro](https://build.nvidia.com/deepseek-ai/deepseek-v4-pro)
+        - [gemma-4-31b-it](https://build.nvidia.com/google/gemma-4-31b-it)
+        - [glm-5.2](https://build.nvidia.com/z-ai/glm-5.2)
 
 ---
 
@@ -269,4 +269,4 @@ Once both services are running, you can use Claude as a router to multiple high-
 
 You can download the complete files used in this tutorial from the repository below:
 
-[View repository on GitHub](https://github.com/ecellsworth/nvidia-subagents-mcp)
+<a class="btn-github" href="https://github.com/ecellsworth/nvidia-subagents-mcp">View repository on GitHub</a>
