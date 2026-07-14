@@ -6,8 +6,6 @@ pubDate: 2026-07-12
 difficulty: "intermediate"
 ---
 
-# Tutorial: Manually Setting Up a Japanese Light Novel Writer Agent
-
 This is a step-by-step walkthrough of everything `install.sh` does for you, explained one piece at a time, so you understand what's being installed and why before you run a single command. It targets macOS and Linux.
 
 If you'd rather not type each command yourself, `install.sh` automates Steps 1, 2, 4, and 5 below — each section notes this and shows the script as the alternative.
@@ -334,4 +332,4 @@ it to, and only because you ran the `rm` commands yourself.
 
 You can download the complete files used in this tutorial from the repository below:
 
-[View repository on GitHub](https://github.com/ecellsworth/jp-ln-writer)
+<a class="btn-github" href="https://github.com/ecellsworth/jp-ln-writer">View repository on GitHub</a>
