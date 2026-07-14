@@ -135,17 +135,6 @@ kbd {
   margin-top: var(--space-5);
 }
 
-/* Text-flow elements keep a readable measure; code blocks, tables, and
-   images (below) are allowed to use the full width of the page column. */
-.prose h2,
-.prose h3,
-.prose p,
-.prose ul,
-.prose ol,
-.prose blockquote {
-  max-width: var(--prose-width);
-}
-
 .prose h2,
 .prose h3 {
   font-weight: 700;
@@ -233,7 +222,7 @@ kbd {
 }
 
 /* Repo / external "call to action" links get a button treatment. */
-.prose a[href^="https://github.com"] {
+.prose a.btn-github {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -246,8 +235,7 @@ kbd {
   text-decoration: none;
   transition: transform var(--duration-fast) var(--ease-out);
 }
-
-.prose a[href^="https://github.com"]:hover {
+.prose a.btn-github:hover {
   transform: translateY(-2px);
 }
 
