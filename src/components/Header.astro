@@ -1,0 +1,78 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+---
+<header class="site-header">
+  <div class="inner">
+    <a href="/" class="logo">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="var(--accent)" />
+        <path d="M9 20 L16 9 L23 20" fill="none" stroke="var(--accent-contrast)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="16" cy="23.5" r="2" fill="var(--accent-contrast)" />
+      </svg>
+      <span class="wordmark">Tutorial Hub</span>
+    </a>
+    <nav aria-label="Primary">
+      <a href="/tutorials/">Tutorials</a>
+    </nav>
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--bg) 75%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .inner {
+    max-width: var(--content-width);
+    margin-inline: auto;
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-decoration: none;
+  }
+
+  .mark {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+  }
+
+  .wordmark {
+    font-weight: 700;
+    font-size: 1.0625rem;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  nav {
+    flex: 1;
+    display: flex;
+    gap: var(--space-5);
+  }
+
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  nav a:hover {
+    color: var(--text);
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  description: string;
+  pubDate: Date;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+}
+
+const { slug, title, description, pubDate, difficulty } = Astro.props;
+const formattedDate = pubDate.toLocaleDateString('en-US', {
+  timeZone: 'UTC',
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+<a class="card" href={`/tutorials/${slug}/`} data-reveal>
+  <div class="meta">
+    <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+    {difficulty && <span class={`badge badge-${difficulty}`}>{difficulty}</span>}
+  </div>
+  <h3>{title}</h3>
+  <p>{description}</p>
+  <span class="read-more">Read tutorial →</span>
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-decoration: none;
+    color: var(--text);
+    transition: transform var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out),
+      border-color var(--duration-base) var(--ease-out);
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card:hover {
+      transform: none;
+    }
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+
+  .badge {
+    padding: 0.15em 0.6em;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    text-transform: capitalize;
+    font-weight: 500;
+  }
+
+  .badge-beginner {
+    color: var(--accent-2);
+    border-color: color-mix(in srgb, var(--accent-2) 40%, var(--border));
+  }
+
+  .badge-intermediate {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  }
+
+  .badge-advanced {
+    color: var(--text);
+  }
+
+  h3 {
+    margin-top: var(--space-4);
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin-top: var(--space-2);
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .read-more {
+    margin-top: var(--space-4);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+</style>

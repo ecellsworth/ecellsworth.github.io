@@ -1,0 +1,27 @@
+# Secrets — never commit real values
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Generated / runtime data (bind-mount targets — real content stays local, not versioned)
+chat_history/*.md
+chroma_db/*
+logs/*.log
+chapters/*
+open-webui-data/*
+
+# install.sh / uninstall.sh — machine-specific record of what was installed here
+install_manifest.txt
+install_manifest.txt.uninstalled-*
+
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

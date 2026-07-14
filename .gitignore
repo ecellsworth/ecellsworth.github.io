@@ -1,3 +1,13 @@
+# Astro / Node
+node_modules/
+.astro/
+npm-debug.log*
+dist/
+
+# OS / tooling
+.DS_Store
+.impeccable/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

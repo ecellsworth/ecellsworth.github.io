@@ -1,0 +1,244 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface NavEntry {
+  slug: string;
+  title: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  heroImage?: string;
+  prev?: NavEntry;
+  next?: NavEntry;
+}
+
+const { title, description, pubDate, updatedDate, difficulty, heroImage, prev, next } = Astro.props;
+
+const formattedDate = pubDate.toLocaleDateString('en-US', {
+  timeZone: 'UTC',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+<BaseLayout title={title} description={description} ogImage={heroImage}>
+  <article class="tutorial">
+    <div class="inner">
+      <a class="back-link" href="/tutorials/">← All tutorials</a>
+
+      <header class="tutorial-header">
+        <div class="meta">
+          <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+          {difficulty && <span class={`badge badge-${difficulty}`}>{difficulty}</span>}
+          {updatedDate && <span>· Updated {updatedDate.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })}</span>}
+        </div>
+        <h1>{title}</h1>
+        <p class="description">{description}</p>
+      </header>
+
+      <div class="prose">
+        <slot />
+      </div>
+
+      <nav class="prev-next" aria-label="Tutorial navigation">
+        {
+          prev ? (
+            <a class="nav-link prev" href={`/tutorials/${prev.slug}/`}>
+              <span class="label">← Previous</span>
+              <span class="title">{prev.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a class="nav-link next" href={`/tutorials/${next.slug}/`}>
+              <span class="label">Next →</span>
+              <span class="title">{next.title}</span>
+            </a>
+          )
+        }
+      </nav>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .tutorial {
+    padding: var(--space-7) 0 var(--space-9);
+  }
+
+  .inner {
+    max-width: var(--content-width);
+    margin-inline: auto;
+    padding-inline: var(--space-5);
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    margin-bottom: var(--space-6);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .tutorial-header {
+    max-width: var(--prose-width);
+    margin-bottom: var(--space-7);
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .badge {
+    padding: 0.15em 0.6em;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    text-transform: capitalize;
+    font-weight: 500;
+  }
+
+  .badge-beginner {
+    color: var(--accent-2);
+    border-color: color-mix(in srgb, var(--accent-2) 40%, var(--border));
+  }
+
+  .badge-intermediate {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  }
+
+  .badge-advanced {
+    color: var(--text);
+  }
+
+  h1 {
+    margin-top: var(--space-3);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .description {
+    margin-top: var(--space-4);
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .prev-next {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-top: var(--space-9);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-link:hover {
+    border-color: var(--accent);
+  }
+
+  .nav-link.next {
+    grid-column: 2;
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .label {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  @media (max-width: 600px) {
+    .prev-next {
+      grid-template-columns: 1fr;
+    }
+
+    .nav-link.next {
+      grid-column: 1;
+      text-align: left;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<script>
+  // Copy-to-clipboard button for code blocks.
+  document.querySelectorAll('.prose pre').forEach((pre) => {
+    const button = document.createElement('button');
+    button.className = 'copy-btn';
+    button.type = 'button';
+    button.textContent = 'Copy';
+    button.setAttribute('aria-label', 'Copy code to clipboard');
+    button.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.textContent ?? '';
+      await navigator.clipboard.writeText(code);
+      button.textContent = 'Copied!';
+      setTimeout(() => (button.textContent = 'Copy'), 1500);
+    });
+    pre.appendChild(button);
+  });
+</script>
+
+<style is:global>
+  .prose pre {
+    padding-top: var(--space-6);
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    padding: 0.3em 0.7em;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .copy-btn:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+</style>

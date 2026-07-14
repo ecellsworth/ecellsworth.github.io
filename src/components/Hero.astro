@@ -1,0 +1,113 @@
+---
+---
+<section class="hero">
+  <div class="mesh" aria-hidden="true"></div>
+  <svg class="grid" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <defs>
+      <pattern id="grid-pattern" width="6" height="6" patternUnits="userSpaceOnUse">
+        <path d="M 6 0 L 0 0 0 6" fill="none" stroke="var(--grid-line)" stroke-width="0.15" />
+      </pattern>
+    </defs>
+    <rect width="100" height="100" fill="url(#grid-pattern)" />
+  </svg>
+
+  <div class="content">
+    <h1><span class="gradient-text">Learn by building.</span></h1>
+    <p class="subhead">Hands-on, no-fluff tutorials for shipping real things with modern AI tooling.</p>
+    <a class="cta" href="/tutorials/">Browse tutorials</a>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .mesh {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(60% 55% at 18% 20%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 70%),
+      radial-gradient(55% 50% at 85% 15%, color-mix(in srgb, var(--accent-2) 26%, transparent), transparent 70%),
+      radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+      var(--bg);
+  }
+
+  .grid {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    mask-image: radial-gradient(75% 75% at 50% 40%, black, transparent);
+  }
+
+  .content {
+    text-align: center;
+    max-width: 58rem;
+    padding: var(--space-6) var(--space-5);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  .gradient-text {
+    background: linear-gradient(100deg, var(--text) 20%, var(--accent) 55%, var(--accent-2) 90%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .subhead {
+    margin-top: var(--space-5);
+    font-size: 1.0625rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* Keep the subhead on one line once there's enough width for it; the
+     vw-scaled size shrinks in step with the viewport so it keeps fitting. */
+  @media (min-width: 700px) {
+    .subhead {
+      white-space: nowrap;
+      font-size: clamp(0.9375rem, 2.1vw, 1.25rem);
+    }
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-7);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out);
+  }
+
+  .cta:hover {
+    transform: translateY(-2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta:hover {
+      transform: none;
+    }
+  }
+</style>
