@@ -222,6 +222,9 @@ touch app/__init__.py
 ```
 
 **`app/logging_config.py`** — shared logger: writes to stdout and to a rotating file under `logs/`.
+
+<details>
+
 ```python
 """
 Shared logging setup.
@@ -290,7 +293,12 @@ def get_logger(name: str) -> logging.Logger:
     return logger
 ```
 
+</details>
+
 **`app/history_manager.py`** — appends every chat turn to a timestamped Markdown transcript under `chat_history/`.
+
+<details>
+
 ```python
 import os
 from datetime import datetime
@@ -323,19 +331,19 @@ class ChatHistoryManager:
             return ""
 ```
 
+</details>
+
 **`app/models.py`** — model registry: maps a model name to an OpenAI-compatible client + backend model id.
+
+<details>
+
 ```python
 """
 Model registry for the lightweight Japanese Light Novel Writer Agent.
 
-Adding a model is a dict entry, nothing else — both `local` and `cloud`
-backends are called through the same OpenAI-compatible client, differing
-only in base_url and API key. See system-design-lightweight.md, Stage 1.
+Adding a model is a dict entry, nothing else — both `local` and `cloud` backends are called through the same OpenAI-compatible client, differing only in base_url and API key. See system-design-lightweight.md, Stage 1.
 
-Secrets (hard constraint): cloud entries name the *environment variable*
-that holds their API key (`api_key_env`); the key value itself is never
-written here, never logged, and is read from that variable only at call
-time in get_client_and_model().
+Secrets (hard constraint): cloud entries name the *environment variable* that holds their API key (`api_key_env`); the key value itself is never written here, never logged, and is read from that variable only at call time in get_client_and_model().
 """
 
 import os
@@ -411,7 +419,12 @@ def list_models() -> list[dict]:
     ]
 ```
 
+</details>
+
 **`app/memory.py`** — embedded Chroma RAG: chunks and embeds chapter files, indexes them, and retrieves the top-k most relevant chunks for a given query.
+
+<details>
+
 ```python
 """
 Embedded Chroma vector memory (RAG) for the lightweight Japanese Light Novel
@@ -714,7 +727,12 @@ def retrieve_context(query: str, k: int = DEFAULT_K) -> str:
     return f"\n--- Relevant story context ---\n{formatted}\n--- End of context ---\n"
 ```
 
+</details>
+
 **`app/server.py`** — the FastAPI app itself. Defines `/health`, `/v1/models`, `/chapters` (GET+POST), and `/v1/chat/completions` (streaming + non-streaming); wires memory and chat history together.
+
+<details>
+
 ```python
 #!/usr/bin/env python3
 """
@@ -969,7 +987,12 @@ async def _stream_and_log(
             history.save("Assistant", full_response.strip())
 ```
 
+</details>
+
 **`app/requirements.txt`** — pinned Python dependencies, installed only inside the container image.
+
+<details>
+
 ```text
 # Japanese Light Novel Writer Agent — Lightweight design (system-design-lightweight.md)
 # Pruned and pinned per Stage 0. Resolved conflict-free via `pip install --dry-run`
@@ -1001,7 +1024,12 @@ chromadb==1.5.9
 httpx==0.28.1
 ```
 
+</details>
+
 **`app/Dockerfile`** — builds the agent service's container image.
+
+<details>
+
 ```dockerfile
 # Japanese Light Novel Writer Agent — lightweight design, Stage 2
 # (system-design-lightweight.md). Base image, requirements install, and run
@@ -1041,11 +1069,16 @@ COPY . ./app/
 CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
+</details>
+
 At this point `app/` should have all seven files: `__init__.py`, `logging_config.py`, `history_manager.py`, `models.py`, `memory.py`, `server.py`, `requirements.txt`, and `Dockerfile`.
 
 ### Step 5 — Create `docker-compose.yml`
 
 At the project root (a sibling of `app/`, not inside it):
+
+<details>
+
 ```yaml
 # Japanese Light Novel Writer Agent — lightweight design, Stages 2-4
 # (system-design-lightweight.md). Reproduced exactly from the design doc's
@@ -1088,9 +1121,14 @@ services:
     volumes: [ "./open-webui-data:/app/backend/data" ]   # bind-mount per blanket rule
 ```
 
+</details>
+
 ### Step 6 — Create `env.example` and `.gitignore`
 
 **`env.example`** (project root) — the safe-to-commit template:
+
+<details>
+
 ```bash
 # Japanese Light Novel Writer Agent — environment template
 #
@@ -1102,10 +1140,15 @@ services:
 # Required only for the two NVIDIA cloud models (glm-5.2, gemma-4-31b-it).
 # The local model (llama3.1-local, via Ollama) works with this left blank.
 # Get a free key at https://build.nvidia.com/models?modal=signin
-NVIDIA_API_KEY=
+NVIDIA_API_KEY=Insert-API-KEY-HERE
 ```
 
+</details>
+
 **`.gitignore`** (project root) — keeps secrets and generated/runtime data out of version control:
+
+<details>
+
 ```text
 # Secrets — never commit real values
 .env
@@ -1135,6 +1178,8 @@ install_manifest.txt.uninstalled-*
 .vscode/
 .idea/
 ```
+
+</details>
 
 At this point every file the stack needs to build and run exists on disk.
 
@@ -1177,6 +1222,9 @@ You're done — every file created by hand, stack running, same result as `insta
 You've already done by hand everything these two scripts automate, so this step is optional — add them only if you (or someone else) will be reinstalling or uninstalling this project again later and want the scripted shortcut.
 
 **`install.sh`** (project root):
+
+<details>
+
 ```bash
 #!/usr/bin/env bash
 #
@@ -1503,7 +1551,12 @@ say "Run ./uninstall.sh at any time to cleanly remove only what this script inst
 say "See README.md and TUTORIAL.md for usage and troubleshooting."
 ```
 
+</details>
+
 **`uninstall.sh`** (project root) — cleanly reverses `install.sh`:
+
+<details>
+
 ```bash
 #!/usr/bin/env bash
 #
@@ -1747,6 +1800,8 @@ say ""
 say "To pick up exactly where you left off, just run ./install.sh again —"
 say "none of the above ever needs to be rebuilt or re-saved."
 ```
+
+</details>
 
 Make both executable:
 ```bash
