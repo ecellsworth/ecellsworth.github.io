@@ -1,111 +1,382 @@
 ---
+// Cloud layout: kept out of the vertical center band so drifting shapes
+// don't collide with the headline. Values are hand-tuned, not random, so
+// the composition stays intentional across every build.
+const clouds = [
+  { top: 9, scale: 0.85, duration: 46, delay: -6, opacity: 0.95 },
+  { top: 21, scale: 1.2, duration: 62, delay: -28, opacity: 0.8 },
+  { top: 70, scale: 0.7, duration: 40, delay: -14, opacity: 0.85 },
+  { top: 81, scale: 1.05, duration: 56, delay: -40, opacity: 0.7 },
+];
+
+// Star field: randomized per build (baked into the static HTML at build
+// time, so it's stable for visitors — not regenerated per page load).
+const STAR_COUNT = 55;
+const stars = Array.from({ length: STAR_COUNT }, () => ({
+  top: Math.random() * 92,
+  left: Math.random() * 100,
+  size: 1 + Math.random() * 1.6,
+  duration: 2.2 + Math.random() * 3.6,
+  delay: -Math.random() * 6,
+}));
 ---
 <section class="hero">
-  <div class="mesh" aria-hidden="true"></div>
-  <svg class="grid" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none">
-    <defs>
-      <pattern id="grid-pattern" width="6" height="6" patternUnits="userSpaceOnUse">
-        <path d="M 6 0 L 0 0 0 6" fill="none" stroke="var(--grid-line)" stroke-width="0.15" />
-      </pattern>
-    </defs>
-    <rect width="100" height="100" fill="url(#grid-pattern)" />
-  </svg>
+  <div class="inner">
+    <div class="sky-card">
+      <!-- Shared cloud silhouette, referenced by every cloud instance below. -->
+      <svg width="0" height="0" style="position: absolute;" aria-hidden="true">
+        <symbol id="cloud-shape" viewBox="0 0 120 60">
+          <ellipse cx="60" cy="42" rx="55" ry="18" />
+          <circle cx="35" cy="30" r="20" />
+          <circle cx="60" cy="20" r="24" />
+          <circle cx="88" cy="32" r="18" />
+        </symbol>
+      </svg>
 
-  <div class="content">
-    <h1><span class="gradient-text">Learn by building.</span></h1>
-    <p class="subhead">Hands-on, no-fluff tutorials for shipping real things with modern AI tooling.</p>
-    <a class="cta" href="/tutorials/">Browse tutorials</a>
+      <div class="spinner">
+        <!-- DAY -->
+        <div class="face face-day" aria-hidden="true">
+          <div class="sky-gradient sky-day"></div>
+          <div class="sun"></div>
+          {
+            clouds.map((c) => (
+              <svg
+                class="cloud"
+                viewBox="0 0 120 60"
+                style={`--top:${c.top}%; --scale:${c.scale}; --duration:${c.duration}s; --delay:${c.delay}s; --op:${c.opacity};`}
+              >
+                <use href="#cloud-shape" />
+              </svg>
+            ))
+          }
+        </div>
+
+        <!-- NIGHT -->
+        <div class="face face-night" aria-hidden="true">
+          <div class="sky-gradient sky-night"></div>
+          <div class="moon"></div>
+          {
+            stars.map((s) => (
+              <span
+                class="star"
+                style={`--top:${s.top}%; --left:${s.left}%; --size:${s.size}px; --duration:${s.duration}s; --delay:${s.delay}s;`}
+              />
+            ))
+          }
+          <span class="shooting-star shooting-star-1"></span>
+          <span class="shooting-star shooting-star-2"></span>
+        </div>
+      </div>
+
+      <div class="scrim" aria-hidden="true"></div>
+
+      <div class="content">
+        <h1>Learn by building.</h1>
+        <p class="subhead">Hands-on, no-fluff tutorials for shipping real things with modern AI tooling.</p>
+        <a class="cta" href="/tutorials/">Browse tutorials</a>
+      </div>
+    </div>
   </div>
 </section>
 
 <style>
   .hero {
+    padding: var(--space-7) 0 var(--space-8);
+  }
+
+  .inner {
+    max-width: var(--content-width);
+    margin-inline: auto;
+    padding-inline: var(--space-5);
+  }
+
+  .sky-card {
     position: relative;
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
     isolation: isolate;
+    overflow: hidden;
+    border-radius: clamp(1.25rem, 3vw, 2rem);
+    box-shadow: var(--shadow-md);
+    min-height: clamp(420px, 58vh, 620px);
   }
 
-  .mesh {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    background:
-      radial-gradient(60% 55% at 18% 20%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 70%),
-      radial-gradient(55% 50% at 85% 15%, color-mix(in srgb, var(--accent-2) 26%, transparent), transparent 70%),
-      radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-      var(--bg);
+  @media (max-width: 600px) {
+    .sky-card {
+      min-height: clamp(360px, 70vh, 520px);
+    }
   }
 
-  .grid {
+  /* --- Rotation mechanism ------------------------------------------------- */
+  /* The whole scene spins flat, counter-clockwise (negative rotate()), rather
+     than tipping over a 3D axis. Day/night content cross-fades right around
+     the midpoint of the spin, so it reads as the scene rotating around and
+     coming back as the night sky. */
+
+  .spinner {
     position: absolute;
     inset: 0;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-    mask-image: radial-gradient(75% 75% at 50% 40%, black, transparent);
+    transform: rotate(0deg);
+    transform-origin: 50% 50%;
+    transition: transform 1.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  :root[data-theme='dark'] .spinner {
+    transform: rotate(-360deg);
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .face-day {
+    opacity: 1;
+    transition: opacity 0.35s ease 0.62s;
+  }
+
+  .face-night {
+    opacity: 0;
+    transition: opacity 0.35s ease 0.62s;
+  }
+
+  :root[data-theme='dark'] .face-day {
+    opacity: 0;
+  }
+
+  :root[data-theme='dark'] .face-night {
+    opacity: 1;
+  }
+
+  .sky-gradient {
+    position: absolute;
+    inset: 0;
+  }
+
+  .sky-day {
+    background: linear-gradient(180deg, #4a9de8 0%, #7ec3f0 42%, #bfe3f7 75%, #eaf6fb 100%);
+  }
+
+  .sky-night {
+    background: linear-gradient(180deg, #05070f 0%, #0d1530 45%, #16204a 80%, #1c2a5e 100%);
+  }
+
+  /* --- Day: sun + clouds -------------------------------------------------- */
+
+  .sun {
+    position: absolute;
+    top: 10%;
+    left: 14%;
+    width: clamp(3rem, 9vw, 5.5rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff9e0, #ffe37a 55%, #ffcf4d 100%);
+    box-shadow: 0 0 60px 18px rgba(255, 210, 90, 0.45), 0 0 120px 40px rgba(255, 210, 90, 0.18);
+  }
+
+  .cloud {
+    position: absolute;
+    top: var(--top);
+    left: -25%;
+    width: calc(150px * var(--scale));
+    height: calc(75px * var(--scale));
+    fill: #ffffff;
+    opacity: var(--op);
+    filter: drop-shadow(0 8px 12px rgba(20, 40, 80, 0.15));
+    animation: cloud-drift var(--duration) linear var(--delay) infinite;
+  }
+
+  @keyframes cloud-drift {
+    from {
+      left: -30%;
+    }
+    to {
+      left: 115%;
+    }
+  }
+
+  /* --- Night: moon, stars, shooting stars --------------------------------- */
+
+  .moon {
+    position: absolute;
+    top: 14%;
+    right: 12%;
+    width: clamp(2.75rem, 7.5vw, 4.5rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fdfdf5, #e7e6da 60%, #cfcdbb 100%);
+    box-shadow: 0 0 40px 8px rgba(230, 230, 200, 0.35), 0 0 90px 24px rgba(200, 200, 160, 0.14);
+  }
+
+  .star {
+    position: absolute;
+    top: var(--top);
+    left: var(--left);
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.85);
+    opacity: 0.75;
+    animation: star-twinkle var(--duration) ease-in-out var(--delay) infinite;
+  }
+
+  @keyframes star-twinkle {
+    0%,
+    100% {
+      opacity: 0.25;
+      transform: scale(0.75);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  .shooting-star {
+    position: absolute;
+    width: 110px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.6) 45%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transform-origin: left center;
+  }
+
+  .shooting-star-1 {
+    top: 18%;
+    left: 78%;
+    animation: shoot-1 9s linear infinite;
+    animation-delay: 1.2s;
+  }
+
+  .shooting-star-2 {
+    top: 40%;
+    left: 55%;
+    animation: shoot-2 13s linear infinite;
+    animation-delay: 6s;
+  }
+
+  @keyframes shoot-1 {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) rotate(-28deg) scaleX(0.3);
+    }
+    3% {
+      opacity: 1;
+      transform: translate(-12px, 8px) rotate(-28deg) scaleX(1);
+    }
+    14% {
+      opacity: 0;
+      transform: translate(-190px, 105px) rotate(-28deg) scaleX(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-190px, 105px) rotate(-28deg) scaleX(1);
+    }
+  }
+
+  @keyframes shoot-2 {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) rotate(-20deg) scaleX(0.3);
+    }
+    3% {
+      opacity: 1;
+      transform: translate(-10px, 6px) rotate(-20deg) scaleX(1);
+    }
+    16% {
+      opacity: 0;
+      transform: translate(-160px, 70px) rotate(-20deg) scaleX(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-160px, 70px) rotate(-20deg) scaleX(1);
+    }
+  }
+
+  /* --- Text overlay -------------------------------------------------------- */
+
+  .scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(6, 10, 22, 0.08) 0%, rgba(6, 10, 22, 0.32) 55%, rgba(6, 10, 22, 0.6) 100%);
+    pointer-events: none;
   }
 
   .content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    max-width: 58rem;
     padding: var(--space-6) var(--space-5);
+    color: #ffffff;
   }
 
   h1 {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-size: clamp(2.25rem, 5.5vw, 4rem);
     font-weight: 800;
     letter-spacing: -0.03em;
-    line-height: 1.05;
-  }
-
-  .gradient-text {
-    background: linear-gradient(100deg, var(--text) 20%, var(--accent) 55%, var(--accent-2) 90%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    line-height: 1.08;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.3);
   }
 
   .subhead {
-    margin-top: var(--space-5);
-    font-size: 1.0625rem;
-    color: var(--text-muted);
+    margin-top: var(--space-4);
+    max-width: 40rem;
+    font-size: clamp(0.9375rem, 2vw, 1.1875rem);
+    color: rgba(255, 255, 255, 0.92);
     line-height: 1.6;
-  }
-
-  /* Keep the subhead on one line once there's enough width for it; the
-     vw-scaled size shrinks in step with the viewport so it keeps fitting. */
-  @media (min-width: 700px) {
-    .subhead {
-      white-space: nowrap;
-      font-size: clamp(0.9375rem, 2.1vw, 1.25rem);
-    }
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.3);
   }
 
   .cta {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    margin-top: var(--space-7);
+    margin-top: var(--space-6);
     padding: var(--space-3) var(--space-6);
     border-radius: var(--radius-md);
-    background: var(--accent);
-    color: var(--accent-contrast);
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
     font-weight: 600;
     text-decoration: none;
-    box-shadow: var(--shadow-md);
     transition: transform var(--duration-fast) var(--ease-out),
-      box-shadow var(--duration-fast) var(--ease-out);
+      background-color var(--duration-fast) var(--ease-out);
   }
 
   .cta:hover {
     transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.22);
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      transition: none;
+    }
+
+    .cloud {
+      animation: none;
+      left: 20%;
+    }
+
+    .star {
+      animation: none;
+      opacity: 0.7;
+    }
+
+    .shooting-star-1,
+    .shooting-star-2 {
+      display: none;
+    }
+
     .cta:hover {
       transform: none;
     }
