@@ -291,29 +291,37 @@ curl -X POST localhost:8000/chapters \
 ## Troubleshooting
 
 **`MissingAPIKeyError` for a cloud model** 
+
 `.env` doesn't have a real value, or the container started before you set it. Fix the value, then `docker compose restart agent`.
 
 **`docker compose up` fails pulling `ghcr.io/open-webui/open-webui:main` with a DNS-style "no such host" error**
+
 DNS resolution problem on your machine, not a project bug. Try, in order: `nslookup ghcr.io` in a plain terminal (fails too → system DNS issue); restart Docker Desktop fully; check Docker Desktop → Settings → Resources →
 
 Network for a stuck DNS override; try a different network if you're behind a restrictive VPN (`ghcr.io` is sometimes blocked even when `docker.io`isn't).
 
 **Agent can't reach Ollama (`connection refused` via `host.docker.internal`)**
+
 Confirm Ollama is actually running natively on your host — it's deliberately not containerized. On Linux, confirm `extra_hosts: host-gateway` is still present in `docker-compose.yml`.
 
 **Chat works but never seems to use earlier chapters**
+
 Chapters must be saved through `POST /chapters` (or dropped as `.md`/`.txt` directly into `chapters/`) before they're searchable. Also confirm `nomic-embed-text` is pulled (`ollama list`) — without it, retrieval degrades silently to no context.
 
 **`logs/agent.log` exists but is empty**
+
 Normal right after a fresh start — the file is created at boot, before anything has logged a line. Send one chat request and check again.
 
 **Port 8000 or 8080 already in use**
+
 Something else on your machine is bound to that port. Stop it, or remap the left-hand side in `docker-compose.yml`'s `ports:` (e.g. `"8001:8000"`).
 
 **`docker compose config` prints my real key to the terminal**
+
 Expected — it shows the fully resolved config Docker will actually use, which includes anything from `.env`. Not a leak; just don't paste, log, or screenshot that specific command's output while a real key is loaded.
 
 **Starting completely fresh**
+
 This is a manual, opt-in reset — a command *you* choose to run. Neither `install.sh` nor `uninstall.sh` ever deletes any of these files on their own:
 
 ```bash
@@ -322,9 +330,7 @@ rm -f chapters/*.md chapters/*.txt chat_history/*.md logs/*.log*
 rm -rf chroma_db/*
 docker compose up --build -d
 ```
-This also never touches Docker, Ollama, or anything `install.sh` set up at
-the OS level — it only clears the four generated-data folders you just told
-it to, and only because you ran the `rm` commands yourself.
+This also never touches Docker, Ollama, or anything `install.sh` set up at the OS level — it only clears the four generated-data folders you just told it to, and only because you ran the `rm` commands yourself.
 
 ---
 
