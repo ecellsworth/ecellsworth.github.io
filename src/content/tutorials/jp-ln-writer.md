@@ -353,11 +353,17 @@ time, never hardcoding or logging it.
 ## Usage guide
 
 **Start:** `docker compose up --build -d`
+
 **Stop:** `docker compose down` (data in bind-mounted folders is untouched)
+
 **Restart just the agent (e.g. after editing `.env`):** `docker compose restart agent`
+
 **View logs:** `docker compose logs -f agent` or `tail -f logs/agent.log`
+
 **Update:** `git pull && docker compose up --build -d`
+
 **Check health:** `docker compose ps` / `curl localhost:8000/health`
+
 **List models:** `curl localhost:8000/v1/models`
 
 **Chat via the API directly:**
