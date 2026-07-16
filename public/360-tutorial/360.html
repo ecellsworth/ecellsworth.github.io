@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scroll-Linked Image Sequence</title>
+
+<!--
+  =====================================================================
+  SCROLL-LINKED IMAGE SEQUENCE (canvas + GSAP ScrollTrigger)
+  =====================================================================
+  How it works: as the user scrolls through a tall section, a stack of
+  frame images is preloaded, and scroll position is mapped to a frame
+  index that gets drawn on a <canvas>. The section is pinned in place
+  with ScrollTrigger while the sequence plays, then released.
+
+  DROP-IN INSTRUCTIONS
+  ---------------------------------------------------------------------
+  1. Put this file in the same folder as your frame images (that's how
+     it's configured below): ezgif-frame-001.jpg ... ezgif-frame-240.jpg
+     If you'd rather keep frames in a subfolder (e.g. "frames/"), or
+     your filenames/count differ, edit the CONFIG block near the top
+     of the <script> below (FRAME_FOLDER / FRAME_COUNT / etc).
+  2. Everything needed (markup, styles, script, CDN links) lives in
+     this one file. To use it as its own page, just open/host it as-is.
+     To drop the sequence into an existing page instead, copy the
+     <section id="sequence-root">, the <style> block, and the <script>
+     block into that page (keep them together).
+  =====================================================================
+-->
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Everything below is scoped so it's safe to paste into an existing page */
+  #sequence-root {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #0b0b0c;
+  }
+
+  #sequence-root canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* keeps things crisp on touch devices, avoids accidental image drag */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  #sequence-root .seq-loader {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #0b0b0c;
+    color: rgba(255, 255, 255, 0.92);
+    font: 500 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: 0.02em;
+    transition: opacity 0.6s ease;
+  }
+
+  #sequence-root .seq-loader.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #sequence-root .seq-spinner {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-top-color: rgba(255, 255, 255, 0.9);
+    animation: seq-spin 0.8s linear infinite;
+  }
+
+  @keyframes seq-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  #sequence-root .seq-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 32px;
+    transform: translateX(-50%);
+    z-index: 4;
+    color: rgba(255, 255, 255, 0.75);
+    font: 500 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.4s ease;
+  }
+
+  #sequence-root .seq-hint::after {
+    content: "";
+    width: 1px;
+    height: 22px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.75), rgba(255,255,255,0));
+    animation: seq-hint-move 1.6s ease-in-out infinite;
+  }
+
+  @keyframes seq-hint-move {
+    0%, 100% { transform: scaleY(1); opacity: 1; }
+    50% { transform: scaleY(0.5); opacity: 0.4; }
+  }
+
+  /* Optional demo content so you can see the pin release on scroll.
+     Safe to delete when you paste the sequence into a real page. */
+  .demo-filler {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 120px 24px;
+    font: 400 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1d1d1f;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= SEQUENCE SECTION START ================= -->
+<section id="sequence-root">
+  <canvas id="sequence-canvas"></canvas>
+
+  <div class="seq-hint" id="sequence-hint">Scroll</div>
+
+  <div class="seq-loader" id="sequence-loader">
+    <div class="seq-spinner"></div>
+    <div id="sequence-loader-text">Loading 0%</div>
+  </div>
+</section>
+<!-- ================= SEQUENCE SECTION END ================= -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =====================================================================
+     CONFIG — edit these to match your own frames / feel
+     ===================================================================== */
+  var FRAME_COUNT = 240;                 // total number of frame images
+  var FRAME_FOLDER = "/360-tutorial/frames/";                 // folder relative to this HTML file, e.g. "frames/" (leave "" if images sit next to this file)
+  var FRAME_PREFIX = "ezgif-frame-";     // filename prefix
+  var FRAME_PAD = 3;                     // zero-padding width, e.g. 001
+  var FRAME_EXT = ".jpg";
+
+  var SCROLL_LENGTH_VH = 4;    // how many viewport-heights of scroll the
+                                // sequence takes to play through (higher = slower/longer)
+  var SCRUB_SMOOTHING = 0.4;   // seconds of "catch-up" smoothing behind the
+                                // scrollbar (0 = locked 1:1, 0.3-0.6 = smooth/no stutter)
+  var BACKGROUND_COLOR = "#0b0b0c"; // letterbox color behind cover-fit image
+
+  function framePath(index /* 1-based */) {
+    var n = String(index);
+    while (n.length < FRAME_PAD) n = "0" + n;
+    return FRAME_FOLDER + FRAME_PREFIX + n + FRAME_EXT;
+  }
+
+  /* =====================================================================
+     SETUP
+     ===================================================================== */
+  var root = document.getElementById("sequence-root");
+  var canvas = document.getElementById("sequence-canvas");
+  var loader = document.getElementById("sequence-loader");
+  var loaderText = document.getElementById("sequence-loader-text");
+  var hint = document.getElementById("sequence-hint");
+  var ctx = canvas.getContext && canvas.getContext("2d");
+
+  // If canvas isn't supported for some reason, bail out gracefully rather
+  // than leaving a broken/blank section.
+  if (!ctx) {
+    root.style.height = "auto";
+    loader.style.display = "none";
+    hint.style.display = "none";
+    return;
+  }
+
+  var images = new Array(FRAME_COUNT);   // Image objects, 0-indexed
+  var loaded = new Array(FRAME_COUNT);   // true once a given frame has decoded
+  var settledCount = 0;                  // loaded OR errored, used for progress %
+  var lastDrawnIndex = -1;               // avoid redundant redraws
+  var currentDpr = 1;
+
+  /* =====================================================================
+     CANVAS SIZING (sharp on retina + mobile, cropped to fill & centered)
+     ===================================================================== */
+  function resizeCanvas() {
+    var rect = root.getBoundingClientRect();
+    currentDpr = Math.min(window.devicePixelRatio || 1, 2.5); // cap for perf on big phones
+    var w = Math.max(1, Math.round(rect.width * currentDpr));
+    var h = Math.max(1, Math.round(rect.height * currentDpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    lastDrawnIndex = -1; // force a redraw at the new size
+    drawFrame(currentFrameIndex(), true);
+  }
+
+  function currentFrameIndex() {
+    return Math.round(frameState.frame);
+  }
+
+  // Draws `img` into the canvas using "cover" fit, centered.
+  function drawCover(img) {
+    ctx.fillStyle = BACKGROUND_COLOR;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    var canvasRatio = canvas.width / canvas.height;
+    var imgRatio = img.naturalWidth / img.naturalHeight;
+    var drawW, drawH, offsetX, offsetY;
+
+    if (imgRatio > canvasRatio) {
+      drawH = canvas.height;
+      drawW = drawH * imgRatio;
+      offsetX = (canvas.width - drawW) / 2;
+      offsetY = 0;
+    } else {
+      drawW = canvas.width;
+      drawH = drawW / imgRatio;
+      offsetX = 0;
+      offsetY = (canvas.height - drawH) / 2;
+    }
+
+    ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+  }
+
+  // Returns the best available image for a target index: the exact frame
+  // if it's loaded, otherwise the nearest already-loaded neighbor. This is
+  // the "graceful fallback" — if the user scrolls ahead of what's
+  // preloaded, we show the closest real frame instead of a blank/broken one.
+  function bestAvailableFrame(targetIndex) {
+    targetIndex = Math.max(0, Math.min(FRAME_COUNT - 1, targetIndex));
+    if (loaded[targetIndex]) return images[targetIndex];
+
+    for (var d = 1; d < FRAME_COUNT; d++) {
+      var lo = targetIndex - d;
+      var hi = targetIndex + d;
+      if (lo >= 0 && loaded[lo]) return images[lo];
+      if (hi < FRAME_COUNT && loaded[hi]) return images[hi];
+    }
+    return null;
+  }
+
+  function drawFrame(targetIndex, force) {
+    if (!force && targetIndex === lastDrawnIndex) return;
+    var img = bestAvailableFrame(targetIndex);
+    if (!img) return; // nothing decoded yet at all
+    drawCover(img);
+    lastDrawnIndex = targetIndex;
+  }
+
+  /* =====================================================================
+     PRELOADING
+     ===================================================================== */
+  function preloadFrames(onProgress, onComplete) {
+    var count = 0;
+    for (var i = 0; i < FRAME_COUNT; i++) {
+      (function (index) {
+        var img = new Image();
+        img.decoding = "async";
+        img.onload = function () {
+          loaded[index] = true;
+          settledCount++;
+          if (index === 0 || bestAvailableFrame(currentFrameIndex()) === img) {
+            drawFrame(currentFrameIndex(), true);
+          }
+          onProgress(settledCount);
+          if (settledCount === FRAME_COUNT) onComplete();
+        };
+        img.onerror = function () {
+          loaded[index] = false;
+          settledCount++;
+          console.warn("Sequence frame failed to load:", img.src);
+          onProgress(settledCount);
+          if (settledCount === FRAME_COUNT) onComplete();
+        };
+        images[index] = img;
+        img.src = framePath(index + 1); // filenames are 1-based
+      })(i);
+    }
+  }
+
+  function updateLoaderUI(count) {
+    var pct = Math.round((count / FRAME_COUNT) * 100);
+    loaderText.textContent = "Loading " + pct + "%";
+  }
+
+  function hideLoader() {
+    loader.classList.add("is-hidden");
+  }
+
+  /* =====================================================================
+     SCROLL-LINKED PLAYBACK (GSAP + ScrollTrigger)
+     ===================================================================== */
+  var frameState = { frame: 0 };
+  var scrollTween = null;
+
+  function initScrollAnimation() {
+    scrollTween = gsap.to(frameState, {
+      frame: FRAME_COUNT - 1,
+      ease: "none",
+      onUpdate: function () {
+        drawFrame(Math.round(frameState.frame));
+      },
+      scrollTrigger: {
+        trigger: "#sequence-root",
+        start: "top top",
+        end: function () { return "+=" + window.innerHeight * SCROLL_LENGTH_VH; },
+        scrub: SCRUB_SMOOTHING,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: function (self) {
+          hint.style.opacity = self.progress > 0.02 ? "0" : "1";
+        }
+      }
+    });
+  }
+
+  var resizeTimer = null;
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      resizeCanvas();
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }, 150);
+  }
+
+  /* =====================================================================
+     STATIC FALLBACK (no GSAP/ScrollTrigger available, e.g. CDN blocked)
+     Keeps the page from breaking — shows the sequence as a normal image
+     that just scrolls with the page instead of pinning/animating.
+     ===================================================================== */
+  function initStaticFallback() {
+    root.style.height = "100vh";
+    resizeCanvas();
+    hint.style.display = "none";
+  }
+
+  /* =====================================================================
+     BOOT
+     ===================================================================== */
+  resizeCanvas();
+  window.addEventListener("resize", onResize);
+  window.addEventListener("orientationchange", onResize);
+
+  preloadFrames(updateLoaderUI, hideLoader);
+
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+    initScrollAnimation();
+  } else {
+    console.warn("GSAP/ScrollTrigger not available — falling back to a static frame.");
+    initStaticFallback();
+  }
+})();
+</script>
+
+</body>
+</html>
