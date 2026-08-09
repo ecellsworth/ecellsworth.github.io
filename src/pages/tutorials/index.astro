@@ -5,29 +5,42 @@ import TutorialCard from '../../components/TutorialCard.astro';
 
 const allTutorials = await getCollection('tutorials', ({ data }) => !data.draft);
 
-const categoryOrder = Array.from(
-  new Set(allTutorials.map((t) => t.data.category ?? 'Uncategorized'))
-).sort((a, b) => (a === 'Uncategorized' ? 1 : b === 'Uncategorized' ? -1 : a.localeCompare(b)));
+// Fixed tier order (not alphabetical) so the page always reads easiest to
+// hardest. Tutorials without a difficulty fall into "Uncategorized" at the
+// end, same fallback pattern used for category grouping elsewhere on the site.
+const tierOrder = ['beginner', 'intermediate', 'advanced', 'uncategorized'] as const;
+const tierLabels: Record<(typeof tierOrder)[number], string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced',
+  uncategorized: 'Uncategorized',
+};
 
-const groups = categoryOrder.map((category) => ({
-  category,
-  tutorials: allTutorials
-    .filter((t) => (t.data.category ?? 'Uncategorized') === category)
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
-}));
+const groups = tierOrder
+  .map((tier) => ({
+    tier,
+    label: tierLabels[tier],
+    tutorials: allTutorials
+      .filter((t) => (t.data.difficulty ?? 'uncategorized') === tier)
+      .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+  }))
+  .filter((group) => group.tutorials.length > 0);
 ---
 <BaseLayout
   title="All tutorials"
-  description="Every hands-on tutorial on Tutorial Hub, grouped by category."
+  description="Every hands-on tutorial on Tutorial Hub, grouped by difficulty."
 >
   <section class="tutorials-page">
     <div class="inner">
       <h1>All tutorials</h1>
 
       {
-        groups.map(({ category, tutorials }) => (
-          <div class="category-group" data-reveal>
-            <h2>{category}</h2>
+        groups.map(({ tier, label, tutorials }) => (
+          <div class="tier-group" data-reveal>
+            <h2>
+              <span class={`tier-dot tier-dot-${tier}`} aria-hidden="true" />
+              {label}
+            </h2>
             <div class="grid">
               {tutorials.map((tutorial) => (
                 <TutorialCard
@@ -64,16 +77,42 @@ const groups = categoryOrder.map((category) => ({
     margin-bottom: var(--space-8);
   }
 
-  .category-group + .category-group {
+  .tier-group + .tier-group {
     margin-top: var(--space-8);
   }
 
   h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.01em;
     margin-bottom: var(--space-5);
     color: var(--text-muted);
+  }
+
+  .tier-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tier-dot-beginner {
+    background: var(--accent-2);
+  }
+
+  .tier-dot-intermediate {
+    background: var(--accent);
+  }
+
+  .tier-dot-advanced {
+    background: var(--text);
+  }
+
+  .tier-dot-uncategorized {
+    background: var(--text-muted);
   }
 
   .grid {
