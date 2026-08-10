@@ -109,7 +109,7 @@ Drop the front and back images into the editor in order.
 Give the AI a motion prompt:
 
 ```text
-Slow smooth 360 rotation. End on the first frame. Camera locked in place, background unchanged.
+Slow smooth 360 rotation. Camera locked in place, background unchanged.
 ```
 
 Download your video. 
