@@ -90,12 +90,12 @@ X1 Dell-VRTX-Blade-Server.png
 x2 APC-Switched-Rack-PDU.jpg
 ```
 
-<img alt="reference images" src="/360-tutorial/step1a.png" width="50%" />
+<img alt="reference images" src="/360-tutorial/step1a.png" />
 
 
 Once you have the front view simply ask it to render a back view.
 
-<img alt="create images" src="/360-tutorial/step1b.png" width="50%" />
+<img alt="create images" src="/360-tutorial/step1b.png" />
 
 <br>
 
@@ -104,7 +104,7 @@ Once you have the front view simply ask it to render a back view.
 Drop the front and back images into the editor in order.
 
 
-<img alt="select video" src="/360-tutorial/step2a.png" width="50%" />
+<img alt="select video" src="/360-tutorial/step2a.png" />
 
 Give the AI a motion prompt:
 
@@ -114,7 +114,7 @@ Slow smooth 360 rotation. End on the first frame. Camera locked in place, backgr
 
 Download your video. 
 
-<img alt="360 video" src="/360-tutorial/step2b.png" width="50%" />
+<img alt="360 video" src="/360-tutorial/step2b.png" />
 
 
 <br>
@@ -126,7 +126,7 @@ Download your video.
 - Choose the settings listed above and download the images. 
 
 
-<img alt="ezgif" src="/360-tutorial/step3.png" width="50%" />
+<img alt="ezgif" src="/360-tutorial/step3.png" />
 
 <br>
 
@@ -145,7 +145,7 @@ Using this folder of image frames, build a scroll-linked image sequence on an HT
 <div class="sequence-wrapper">
   <iframe 
     src="/360-tutorial/360.html" 
-    style="width: 50%; height: 80vh; min-height: 480px; border: none; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);"
+    style="width: 100%; height: 70vh; min-height: 480px; border: none; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);"
     allowfullscreen>
   </iframe>
 </div>

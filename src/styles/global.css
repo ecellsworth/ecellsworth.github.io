@@ -199,7 +199,10 @@ kbd {
 }
 
 .prose table {
+  display: block;
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
   font-size: 0.9375rem;
 }
