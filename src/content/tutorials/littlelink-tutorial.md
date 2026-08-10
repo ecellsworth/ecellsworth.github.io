@@ -1,6 +1,6 @@
 ---
-title: "Setting Up LittleLink on GitHub Pages
-description: "Create your own Linktree page for free using LittleLink on GitHub Pages
+title: "Setting Up LittleLink on GitHub Pages"
+description: "Create your own Linktree page for free using LittleLink on GitHub Pages."
 category: "MCP & Agents"
 pubDate: 2026-08-10
 difficulty: "beginner"
