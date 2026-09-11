@@ -1,0 +1,194 @@
+---
+// Ported from /day-sky/day-sky.html (a standalone CSS/JS sky demo the user
+// provided) into a scoped Astro component. Markup and hand-tuned cloud
+// positions/timings are kept verbatim from the source file so the animation
+// looks identical; only the asset URLs were repointed at /public/sky-hero/
+// (extracted from the demo's inlined base64 images — see NightSkyScene.astro
+// for the matching night version) and everything was scoped under
+// `.day-sky-scene` so it can sit inside the homepage hero instead of owning
+// the whole viewport.
+---
+<div class="day-sky-scene" aria-hidden="true">
+  <div class="cloud-layer far" aria-hidden="true">
+    <div class="cloud-drift" style="width:140px;height:90px;top:8%;left:16%;animation-duration:140s;animation-delay:-0s;">
+      <div class="cloud-shape" data-shape="ragged"><span class="puff" style="width:36%;height:36%;left:6%;top:30%;transform:rotate(22deg) scale(0.95);"></span><span class="puff" style="width:30%;height:30%;left:24%;top:18%;transform:rotate(-8deg) scale(0.8);"></span><span class="puff" style="width:42%;height:42%;left:34%;top:28%;transform:rotate(6deg) scale(1.05);"></span><span class="puff" style="width:28%;height:28%;left:52%;top:14%;transform:rotate(-18deg) scale(0.75);"></span><span class="puff" style="width:38%;height:38%;left:58%;top:34%;transform:rotate(14deg) scale(0.95);"></span><span class="puff" style="width:32%;height:32%;left:74%;top:24%;transform:rotate(-6deg) scale(0.82);"></span><span class="puff" style="width:24%;height:24%;left:44%;top:44%;transform:rotate(10deg) scale(0.7);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:160px;height:80px;top:14%;left:46%;animation-duration:160s;animation-delay:-40s;">
+      <div class="cloud-shape" data-shape="bank"><span class="puff" style="width:42%;height:42%;left:-4%;top:28%;transform:rotate(-18deg) scale(1.05);"></span><span class="puff" style="width:46%;height:46%;left:12%;top:18%;transform:rotate(12deg) scale(1.1);"></span><span class="puff" style="width:44%;height:44%;left:30%;top:24%;transform:rotate(-8deg) scale(1);"></span><span class="puff" style="width:48%;height:48%;left:46%;top:16%;transform:rotate(16deg) scale(1.08);"></span><span class="puff" style="width:42%;height:42%;left:62%;top:26%;transform:rotate(-12deg) scale(0.98);"></span><span class="puff" style="width:38%;height:38%;left:76%;top:32%;transform:rotate(8deg) scale(0.92);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:100px;height:90px;top:6%;left:74%;animation-duration:150s;animation-delay:-90s;">
+      <div class="cloud-shape" data-shape="knot"><span class="puff" style="width:40%;height:40%;left:22%;top:22%;transform:rotate(0deg) scale(1);"></span><span class="puff" style="width:36%;height:36%;left:10%;top:30%;transform:rotate(-20deg) scale(0.95);"></span><span class="puff" style="width:36%;height:36%;left:38%;top:28%;transform:rotate(18deg) scale(0.95);"></span><span class="puff" style="width:32%;height:32%;left:24%;top:10%;transform:rotate(8deg) scale(0.85);"></span><span class="puff" style="width:32%;height:32%;left:28%;top:40%;transform:rotate(-12deg) scale(0.85);"></span><span class="puff" style="width:26%;height:26%;left:44%;top:16%;transform:rotate(28deg) scale(0.72);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:130px;height:80px;top:19%;left:92%;animation-duration:170s;animation-delay:-20s;">
+      <div class="cloud-shape" data-shape="twin"><span class="puff" style="width:44%;height:44%;left:0%;top:22%;transform:rotate(-14deg) scale(1.05);"></span><span class="puff" style="width:38%;height:38%;left:10%;top:36%;transform:rotate(10deg) scale(0.92);"></span><span class="puff" style="width:32%;height:32%;left:28%;top:28%;transform:rotate(4deg) scale(0.8);"></span><span class="puff" style="width:44%;height:44%;left:48%;top:18%;transform:rotate(12deg) scale(1.05);"></span><span class="puff" style="width:38%;height:38%;left:60%;top:34%;transform:rotate(-10deg) scale(0.92);"></span><span class="puff" style="width:30%;height:30%;left:72%;top:26%;transform:rotate(18deg) scale(0.78);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:150px;height:75px;top:11%;left:112%;animation-duration:155s;animation-delay:-10s;">
+      <div class="cloud-shape" data-shape="bank"><span class="puff" style="width:42%;height:42%;left:-4%;top:28%;transform:rotate(-18deg) scale(1.05);"></span><span class="puff" style="width:46%;height:46%;left:12%;top:18%;transform:rotate(12deg) scale(1.1);"></span><span class="puff" style="width:44%;height:44%;left:30%;top:24%;transform:rotate(-8deg) scale(1);"></span><span class="puff" style="width:48%;height:48%;left:46%;top:16%;transform:rotate(16deg) scale(1.08);"></span><span class="puff" style="width:42%;height:42%;left:62%;top:26%;transform:rotate(-12deg) scale(0.98);"></span><span class="puff" style="width:38%;height:38%;left:76%;top:32%;transform:rotate(8deg) scale(0.92);"></span></div>
+    </div>
+  </div>
+  <div class="cloud-layer behind" aria-hidden="true">
+    <div class="cloud-drift" style="width:280px;height:240px;top:3%;left:6%;animation-duration:95s;animation-delay:-0s;">
+      <div class="cloud-shape" data-shape="pile"><span class="puff" style="width:40%;height:40%;left:18%;top:38%;transform:rotate(-10deg) scale(1);"></span><span class="puff" style="width:44%;height:44%;left:34%;top:32%;transform:rotate(14deg) scale(1.05);"></span><span class="puff" style="width:38%;height:38%;left:50%;top:40%;transform:rotate(-6deg) scale(0.95);"></span><span class="puff" style="width:36%;height:36%;left:28%;top:18%;transform:rotate(8deg) scale(0.9);"></span><span class="puff" style="width:34%;height:34%;left:44%;top:14%;transform:rotate(-16deg) scale(0.88);"></span><span class="puff" style="width:28%;height:28%;left:38%;top:4%;transform:rotate(20deg) scale(0.78);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:340px;height:200px;top:1%;left:38%;animation-duration:110s;animation-delay:-50s;">
+      <div class="cloud-shape" data-shape="bank"><span class="puff" style="width:42%;height:42%;left:-4%;top:28%;transform:rotate(-18deg) scale(1.05);"></span><span class="puff" style="width:46%;height:46%;left:12%;top:18%;transform:rotate(12deg) scale(1.1);"></span><span class="puff" style="width:44%;height:44%;left:30%;top:24%;transform:rotate(-8deg) scale(1);"></span><span class="puff" style="width:48%;height:48%;left:46%;top:16%;transform:rotate(16deg) scale(1.08);"></span><span class="puff" style="width:42%;height:42%;left:62%;top:26%;transform:rotate(-12deg) scale(0.98);"></span><span class="puff" style="width:38%;height:38%;left:76%;top:32%;transform:rotate(8deg) scale(0.92);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:300px;height:220px;top:9%;left:90%;animation-duration:100s;animation-delay:-25s;">
+      <div class="cloud-shape" data-shape="twin"><span class="puff" style="width:44%;height:44%;left:0%;top:22%;transform:rotate(-14deg) scale(1.05);"></span><span class="puff" style="width:38%;height:38%;left:10%;top:36%;transform:rotate(10deg) scale(0.92);"></span><span class="puff" style="width:32%;height:32%;left:28%;top:28%;transform:rotate(4deg) scale(0.8);"></span><span class="puff" style="width:44%;height:44%;left:48%;top:18%;transform:rotate(12deg) scale(1.05);"></span><span class="puff" style="width:38%;height:38%;left:60%;top:34%;transform:rotate(-10deg) scale(0.92);"></span><span class="puff" style="width:30%;height:30%;left:72%;top:26%;transform:rotate(18deg) scale(0.78);"></span></div>
+    </div>
+  </div>
+  <div class="img-box" aria-label="Sun"></div>
+  <div class="cloud-layer front">
+    <div class="cloud-drift" style="width:320px;height:270px;top:1%;left:22%;animation-duration:80s;animation-delay:-15s;">
+      <div class="cloud-shape" data-shape="pile"><span class="puff" style="width:40%;height:40%;left:18%;top:38%;transform:rotate(-10deg) scale(1);"></span><span class="puff" style="width:44%;height:44%;left:34%;top:32%;transform:rotate(14deg) scale(1.05);"></span><span class="puff" style="width:38%;height:38%;left:50%;top:40%;transform:rotate(-6deg) scale(0.95);"></span><span class="puff" style="width:36%;height:36%;left:28%;top:18%;transform:rotate(8deg) scale(0.9);"></span><span class="puff" style="width:34%;height:34%;left:44%;top:14%;transform:rotate(-16deg) scale(0.88);"></span><span class="puff" style="width:28%;height:28%;left:38%;top:4%;transform:rotate(20deg) scale(0.78);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:300px;height:230px;top:8%;left:66%;animation-duration:88s;animation-delay:-55s;">
+      <div class="cloud-shape" data-shape="ragged"><span class="puff" style="width:36%;height:36%;left:6%;top:30%;transform:rotate(22deg) scale(0.95);"></span><span class="puff" style="width:30%;height:30%;left:24%;top:18%;transform:rotate(-8deg) scale(0.8);"></span><span class="puff" style="width:42%;height:42%;left:34%;top:28%;transform:rotate(6deg) scale(1.05);"></span><span class="puff" style="width:28%;height:28%;left:52%;top:14%;transform:rotate(-18deg) scale(0.75);"></span><span class="puff" style="width:38%;height:38%;left:58%;top:34%;transform:rotate(14deg) scale(0.95);"></span><span class="puff" style="width:32%;height:32%;left:74%;top:24%;transform:rotate(-6deg) scale(0.82);"></span><span class="puff" style="width:24%;height:24%;left:44%;top:44%;transform:rotate(10deg) scale(0.7);"></span></div>
+    </div>
+    <div class="cloud-drift" style="width:360px;height:220px;top:-2%;left:116%;animation-duration:76s;animation-delay:-0s;">
+      <div class="cloud-shape" data-shape="bank"><span class="puff" style="width:42%;height:42%;left:-4%;top:28%;transform:rotate(-18deg) scale(1.05);"></span><span class="puff" style="width:46%;height:46%;left:12%;top:18%;transform:rotate(12deg) scale(1.1);"></span><span class="puff" style="width:44%;height:44%;left:30%;top:24%;transform:rotate(-8deg) scale(1);"></span><span class="puff" style="width:48%;height:48%;left:46%;top:16%;transform:rotate(16deg) scale(1.08);"></span><span class="puff" style="width:42%;height:42%;left:62%;top:26%;transform:rotate(-12deg) scale(0.98);"></span><span class="puff" style="width:38%;height:38%;left:76%;top:32%;transform:rotate(8deg) scale(0.92);"></span></div>
+    </div>
+  </div>
+
+  <div class="landscape"></div>
+  <div class="filter"></div>
+</div>
+
+<style>
+  .day-sky-scene {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: default;
+    background: linear-gradient(to bottom, #163a7a 0%, #2e6bb3 42%, #6ec4ef 78%, #c5e7fa 100%);
+  }
+
+  .filter {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #8ecfff;
+    mix-blend-mode: soft-light;
+    opacity: 0.18;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  /* Daytime landscape silhouette (white sky keyed out). */
+  .landscape {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/sky-hero/day-landscape.png');
+    background-size: 1000px 250px;
+    background-repeat: repeat-x;
+    background-position: center bottom;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* Sun */
+  .img-box {
+    position: absolute;
+    top: 8%;
+    left: 12%;
+    width: min(25.2vw, 234px);
+    height: min(25.2vw, 234px);
+    border-radius: 50%;
+    background: url('/sky-hero/day-sun.gif') no-repeat center / cover;
+    animation: day-projector-effect 4.5s ease-in-out both infinite;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  @keyframes day-projector-effect {
+    0%, 100% { opacity: 0.96; }
+    40% { opacity: 1; }
+    70% { opacity: 0.94; }
+  }
+
+  /* Clouds — puff texture clustered into different shapes */
+  .cloud-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .cloud-layer.far { z-index: 0; }
+  .cloud-layer.behind { z-index: 0; }
+  .cloud-layer.front { z-index: 2; }
+
+  .cloud-drift {
+    position: absolute;
+    pointer-events: none;
+    animation: day-drift-left linear infinite;
+  }
+
+  .cloud-shape {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    cursor: pointer;
+    transform-origin: center center;
+    transition: filter 0.35s ease;
+  }
+  .cloud-shape:hover {
+    filter: brightness(1.12) saturate(1.05);
+  }
+
+  .puff {
+    position: absolute;
+    background-image: url('/sky-hero/day-cloud-puff.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    transform-origin: center center;
+    transition: transform 0.45s ease-out;
+  }
+
+  .cloud-layer.far .puff { opacity: 0.5; filter: blur(1px) brightness(1.14); }
+  .cloud-layer.behind .puff { opacity: 0.78; }
+  .cloud-layer.front .puff { opacity: 0.9; }
+
+  @keyframes day-drift-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-160vw); }
+  }
+</style>
+
+<script>
+  (function () {
+    document.querySelectorAll('.day-sky-scene .puff').forEach(function (puff) {
+      puff.setAttribute('data-base', (puff as HTMLElement).style.transform || '');
+    });
+    document.querySelectorAll('.day-sky-scene .cloud-shape').forEach(function (shape) {
+      const puffs = shape.querySelectorAll('.puff');
+      shape.addEventListener('mousemove', function (e) {
+        const evt = e as MouseEvent;
+        const r = shape.getBoundingClientRect();
+        const nx = ((evt.clientX - r.left) / r.width - 0.5) * 2;
+        const ny = ((evt.clientY - r.top) / r.height - 0.5) * 2;
+        puffs.forEach(function (puff, i) {
+          const el = puff as HTMLElement;
+          const depth = 6 + (i % 5) * 5;
+          const rot = (nx * 6 + ny * -3) * (i % 2 === 0 ? 1 : -1);
+          el.style.transform =
+            el.getAttribute('data-base') +
+            ' translate(' + (nx * depth) + 'px,' + (ny * depth * 0.45) + 'px) rotate(' + rot + 'deg)';
+        });
+      });
+      shape.addEventListener('mouseleave', function () {
+        puffs.forEach(function (puff) {
+          const el = puff as HTMLElement;
+          el.style.transform = el.getAttribute('data-base') || '';
+        });
+      });
+    });
+  })();
+</script>

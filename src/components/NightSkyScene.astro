@@ -1,0 +1,378 @@
+---
+// Ported from /night-sky/night-sky.html (a standalone canvas star-field demo
+// the user provided) into a scoped Astro component, adapted to live inside
+// the homepage hero instead of owning the whole viewport:
+//   - the dat.GUI control panel (top-right "Size / Speed / Sky speed"
+//     sliders) has been removed per the user's explicit request; the values
+//     it used to control are now fixed constants.
+//   - canvas sizing and mouse coordinates are computed relative to this
+//     component's own container instead of the full window, since the
+//     original assumed the canvas filled the viewport.
+//   - the animation loop pauses (drawing one static frame) when the visitor
+//     prefers reduced motion, matching the rest of the site's motion policy.
+// Asset URLs point at /public/sky-hero/ (extracted from the demo's inlined
+// base64 images — see DaySkyScene.astro for the matching day version).
+---
+<div class="night-sky-scene" aria-hidden="true">
+  <div class="img-box" aria-label="Moon"></div>
+  <div class="landscape"></div>
+  <div class="filter"></div>
+  <canvas class="night-sky-canvas"></canvas>
+</div>
+
+<style>
+  .night-sky-scene {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: none;
+    background: linear-gradient(to bottom, #000000 0%, #5788fe 100%);
+  }
+
+  .filter {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #fe5757;
+    animation: night-color-change 30s ease-in-out infinite;
+    animation-fill-mode: both;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  @keyframes night-color-change {
+    0%, 100% { opacity: 0; }
+    50% { opacity: .9; }
+  }
+
+  .night-sky-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+
+  /* Landscape silhouette. */
+  .landscape {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/sky-hero/night-landscape.png');
+    background-size: 1000px 250px;
+    background-repeat: repeat-x;
+    background-position: center bottom;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* Moon */
+  .img-box {
+    position: absolute;
+    top: 8%;
+    left: 12%;
+    width: min(25.2vw, 234px);
+    height: min(25.2vw, 234px);
+    border-radius: 50%;
+    background: url('/sky-hero/night-moon.png') no-repeat center / cover;
+    animation: night-projector-effect 1.2s both infinite;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  @keyframes night-projector-effect {
+    0%, 30%, 50%, 100% { opacity: 0.9; }
+    20%, 40%, 90% { opacity: 1; }
+  }
+</style>
+
+<script>
+  (function () {
+    // Only one instance of this component lives on a page (the homepage
+    // hero), so a plain query is enough — no need to scope via
+    // document.currentScript, which is null for module scripts anyway.
+    const scene = document.querySelector<HTMLElement>('.night-sky-scene');
+    if (!scene) return;
+    const canvas = scene.querySelector<HTMLCanvasElement>('.night-sky-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let WIDTH = 0;
+    let HEIGHT = 0;
+
+    // These used to be live-tunable via a dat.GUI panel in the top-right
+    // corner of the original demo. The panel is gone (removed per request);
+    // these are just the defaults it started with.
+    const params = {
+      maxDistFromCursor: 50,
+      dotsSpeed: 0,
+      backgroundSpeed: 0,
+    };
+
+    function Star(this: any, id: number, x: number, y: number) {
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.r = Math.floor(Math.random() * 2) + 1;
+      const alpha = (Math.floor(Math.random() * 10) + 1) / 10 / 2;
+      this.color = 'rgba(255,255,255,' + alpha + ')';
+    }
+
+    Star.prototype.draw = function () {
+      ctx!.fillStyle = this.color;
+      ctx!.shadowBlur = this.r * 2;
+      ctx!.beginPath();
+      ctx!.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+      ctx!.closePath();
+      ctx!.fill();
+    };
+
+    Star.prototype.move = function () {
+      this.y -= 0.15 + params.backgroundSpeed / 100;
+      if (this.y <= -10) this.y = HEIGHT + 10;
+      this.draw();
+    };
+
+    let shootingStar: any = null;
+    let nextShootingStarAt = 0;
+
+    function scheduleShootingStar() {
+      const wait = 5000 + Math.random() * 12000;
+      nextShootingStarAt = performance.now() + wait;
+    }
+
+    function spawnShootingStar() {
+      const startX = WIDTH * (0.62 + Math.random() * 0.32);
+      const startY = HEIGHT * (0.04 + Math.random() * 0.18);
+      shootingStar = {
+        x: startX,
+        y: startY,
+        vx: -(2.8 + Math.random() * 2.2),
+        vy: 1.4 + Math.random() * 1.4,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.006,
+        len: 70 + Math.random() * 50,
+      };
+    }
+
+    function updateShootingStar() {
+      const now = performance.now();
+      if (!shootingStar && now >= nextShootingStarAt) {
+        spawnShootingStar();
+      }
+      if (!shootingStar) return;
+
+      const s = shootingStar;
+      s.x += s.vx;
+      s.y += s.vy;
+      s.life -= s.decay;
+
+      if (s.life <= 0 || s.x < -s.len || s.y > HEIGHT * 0.7) {
+        shootingStar = null;
+        scheduleShootingStar();
+        return;
+      }
+
+      const angle = Math.atan2(s.vy, s.vx);
+      const tailX = s.x - Math.cos(angle) * s.len * s.life;
+      const tailY = s.y - Math.sin(angle) * s.len * s.life;
+
+      ctx!.save();
+      ctx!.globalCompositeOperation = 'lighter';
+      ctx!.shadowBlur = 0;
+      const grad = ctx!.createLinearGradient(tailX, tailY, s.x, s.y);
+      grad.addColorStop(0, 'rgba(255,255,255,0)');
+      grad.addColorStop(0.55, 'rgba(220,235,255,' + (0.25 * s.life) + ')');
+      grad.addColorStop(1, 'rgba(255,255,255,' + (0.95 * s.life) + ')');
+      ctx!.strokeStyle = grad;
+      ctx!.lineWidth = 1.6;
+      ctx!.lineCap = 'round';
+      ctx!.beginPath();
+      ctx!.moveTo(tailX, tailY);
+      ctx!.lineTo(s.x, s.y);
+      ctx!.stroke();
+
+      ctx!.fillStyle = 'rgba(255,255,255,' + (0.9 * s.life) + ')';
+      ctx!.shadowColor = 'rgba(200,220,255,0.9)';
+      ctx!.shadowBlur = 10;
+      ctx!.beginPath();
+      ctx!.arc(s.x, s.y, 1.4, 0, Math.PI * 2);
+      ctx!.fill();
+      ctx!.restore();
+    }
+
+    function Dot(this: any, id: number, x: number, y: number) {
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.r = Math.floor(Math.random() * 5) + 1;
+      this.speed = 0.5;
+      this.a = 0.5;
+      this.aReduction = 0.005;
+      this.color = 'rgba(255,255,255,' + this.a + ')';
+      this.linkColor = 'rgba(255,255,255,' + this.a / 4 + ')';
+      this.dir = Math.floor(Math.random() * 140) + 200;
+    }
+
+    Dot.prototype.draw = function () {
+      ctx!.fillStyle = this.color;
+      ctx!.shadowBlur = this.r * 2;
+      ctx!.beginPath();
+      ctx!.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+      ctx!.closePath();
+      ctx!.fill();
+    };
+
+    Dot.prototype.link = function () {
+      if (this.id === 0) return;
+      const previousDot1 = getPreviousDot(this.id, 1);
+      const previousDot2 = getPreviousDot(this.id, 2);
+      const previousDot3 = getPreviousDot(this.id, 3);
+      if (!previousDot1) return;
+      ctx!.strokeStyle = this.linkColor;
+      ctx!.moveTo(previousDot1.x, previousDot1.y);
+      ctx!.beginPath();
+      ctx!.lineTo(this.x, this.y);
+      if (previousDot2 !== false) ctx!.lineTo(previousDot2.x, previousDot2.y);
+      if (previousDot3 !== false) ctx!.lineTo(previousDot3.x, previousDot3.y);
+      ctx!.stroke();
+      ctx!.closePath();
+    };
+
+    function getPreviousDot(id: number, stepback: number) {
+      if (id === 0 || id - stepback < 0) return false;
+      if (typeof dots[id - stepback] !== 'undefined') return dots[id - stepback];
+      return false;
+    }
+
+    Dot.prototype.move = function () {
+      this.a -= this.aReduction;
+      if (this.a <= 0) {
+        this.die();
+        return;
+      }
+      this.color = 'rgba(255,255,255,' + this.a + ')';
+      this.linkColor = 'rgba(255,255,255,' + this.a / 4 + ')';
+      this.x = this.x + Math.cos(degToRad(this.dir)) * (this.speed + params.dotsSpeed / 100);
+      this.y = this.y + Math.sin(degToRad(this.dir)) * (this.speed + params.dotsSpeed / 100);
+      this.draw();
+      this.link();
+    };
+
+    Dot.prototype.die = function () {
+      dots[this.id] = null;
+      delete dots[this.id];
+    };
+
+    let mouseMoving = false;
+    let mouseMoveChecker: ReturnType<typeof setTimeout>;
+    let mouseX = 0;
+    let mouseY = 0;
+    let stars: any[] = [];
+    const initStarsPopulation = 80;
+    let dots: any[] = [];
+    const dotsMinDist = 2;
+
+    function degToRad(deg: number) {
+      return deg * (Math.PI / 180);
+    }
+
+    function drawIfMouseMoving() {
+      if (!mouseMoving) return;
+
+      if (dots.length === 0) {
+        dots[0] = new (Dot as any)(0, mouseX, mouseY);
+        dots[0].draw();
+        return;
+      }
+
+      const previousDot = getPreviousDot(dots.length, 1) as any;
+      const prevX = previousDot.x;
+      const prevY = previousDot.y;
+
+      const diffX = Math.abs(prevX - mouseX);
+      const diffY = Math.abs(prevY - mouseY);
+
+      if (diffX < dotsMinDist || diffY < dotsMinDist) return;
+
+      let xVariation = Math.random() > 0.5 ? -1 : 1;
+      xVariation = xVariation * Math.floor(Math.random() * params.maxDistFromCursor) + 1;
+      let yVariation = Math.random() > 0.5 ? -1 : 1;
+      yVariation = yVariation * Math.floor(Math.random() * params.maxDistFromCursor) + 1;
+      dots[dots.length] = new (Dot as any)(dots.length, mouseX + xVariation, mouseY + yVariation);
+      dots[dots.length - 1].draw();
+      dots[dots.length - 1].link();
+    }
+
+    function setCanvasSize() {
+      const rect = scene!.getBoundingClientRect();
+      WIDTH = rect.width;
+      HEIGHT = rect.height;
+      canvas!.width = WIDTH;
+      canvas!.height = HEIGHT;
+    }
+
+    function init() {
+      ctx!.strokeStyle = 'white';
+      ctx!.shadowColor = 'white';
+      stars = [];
+      for (let i = 0; i < initStarsPopulation; i++) {
+        stars[i] = new (Star as any)(i, Math.floor(Math.random() * WIDTH), Math.floor(Math.random() * HEIGHT));
+      }
+      ctx!.shadowBlur = 0;
+      animate();
+    }
+
+    function animate() {
+      ctx!.clearRect(0, 0, WIDTH, HEIGHT);
+      for (const i in stars) {
+        stars[i].move();
+      }
+      if (!reducedMotion) {
+        updateShootingStar();
+      }
+      for (const i in dots) {
+        dots[i].move();
+      }
+      drawIfMouseMoving();
+      if (!reducedMotion) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    setCanvasSize();
+    if (!reducedMotion) {
+      scheduleShootingStar();
+    }
+    init();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => {
+        setCanvasSize();
+      }).observe(scene);
+    } else {
+      window.addEventListener('resize', setCanvasSize);
+    }
+
+    if (!reducedMotion) {
+      scene.addEventListener('mousemove', function (e) {
+        const rect = canvas!.getBoundingClientRect();
+        mouseMoving = true;
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        clearInterval(mouseMoveChecker);
+        mouseMoveChecker = setTimeout(function () {
+          mouseMoving = false;
+        }, 100);
+      });
+    }
+  })();
+</script>
